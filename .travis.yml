@@ -1,9 +1,9 @@
 x-tox-env: &x-tox-env >
-  TOX_CMD="tox --skip-missing-interpreters=false -v"
+  TOX_CMD="${TOX_PATH:-tox} --skip-missing-interpreters=false -v"
 
 x-tox-install: &x-tox-install |
-  pip install -U pip
-  pip install 'tox<=3.14.5' 'virtualenv<20.0.5'
+  ${PIP_PATH:-pip} install -U pip
+  ${PIP_PATH:-pip} install 'tox<=3.14.5' 'virtualenv<20.0.5'
 
 x-linux-shard: &x-linux-shard
   os: linux
@@ -51,6 +51,9 @@ x-pyenv-install: &x-pyenv-install |
   "${PYENV}" install --keep --skip-existing ${PYENV_VERSION}
   "${PYENV}" global ${PYENV_VERSION}
 
+x-pyenv-27-env: &x-pyenv-27-env >
+  PYENV_VERSION=2.7.18
+
 x-pyenv-39-env: &x-pyenv-39-env >
   PYENV_VERSION=3.9.1
 
@@ -89,7 +92,7 @@ x-osx-27-shard: &x-osx-27-shard
   env:
     - *x-tox-env
     - *x-pyenv-env
-    - PYENV_VERSION=2.7.18
+    - *x-pyenv-27-env
 
 x-osx-39-shard: &x-osx-39-shard
   <<: *x-osx-shard
@@ -97,6 +100,33 @@ x-osx-39-shard: &x-osx-39-shard
     - *x-tox-env
     - *x-pyenv-env
     - *x-pyenv-39-env
+
+x-windows-shard: &x-windows-shard
+  os: windows
+  language: shell
+  cache:
+    # The default is 3 minutes (180).
+    timeout: 300
+  install:
+    - *x-tox-install
+
+x-windows-27-shard: &x-windows-27-shard
+  <<: *x-windows-shard
+  before_install:
+  - choco install python2
+  env:
+    - PIP_PATH="C:\Python27\python.exe -m pip"
+    - TOX_PATH="C:\Python27\Scripts\tox"
+    - *x-tox-env
+
+x-windows-39-shard: &x-windows-39-shard
+  <<: *x-windows-shard
+  before_install:
+  - choco install python --version 3.9.1
+  env:
+    - PIP_PATH="C:\Python39\python.exe -m pip"
+    - TOX_PATH="C:\Python39\Scripts\tox"
+    - *x-tox-env
 
 # NB: Travis partitions caches using a combination of os, language amd env vars. As such, we do not
 # use TOXENV and instead pass the toxenv via -e on the command line. This helps ensure we share
@@ -175,5 +205,21 @@ matrix:
       script: ${TOX_CMD} -e py27-integration
 
     - <<: *x-osx-39-shard
+      name: TOXENV=py39-integration
+      script: ${TOX_CMD} -e py39-integration
+
+    - <<: *x-windows-27-shard
+      name: TOXENV=py27
+      script: ${TOX_CMD} -e py27
+
+    - <<: *x-windows-39-shard
+      name: TOXENV=py39
+      script: ${TOX_CMD} -e py39
+
+    - <<: *x-windows-27-shard
+      name: TOXENV=py27-integration
+      script: ${TOX_CMD} -e py27-integration
+
+    - <<: *x-windows-39-shard
       name: TOXENV=py39-integration
       script: ${TOX_CMD} -e py39-integration
