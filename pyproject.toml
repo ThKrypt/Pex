@@ -38,7 +38,7 @@ authors = [
 ]
 description = "The PEX packaging toolchain."
 readme = "README.rst"
-license-files = { paths = ["LICENSE"] }
+license = { file = "LICENSE" }
 keywords = ["package", "executable", "virtualenv", "lock", "freeze"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
