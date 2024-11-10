@@ -7,6 +7,7 @@ import sys
 import weakref
 from collections import defaultdict
 from functools import total_ordering
+from typing import Iterator
 
 from _weakref import ReferenceType
 
