@@ -9,7 +9,6 @@ import shutil
 import tarfile
 from collections import OrderedDict, defaultdict
 from multiprocessing.pool import ThreadPool
-from typing import Iterator
 
 from pex import hashing, resolver
 from pex.auth import PasswordDatabase
@@ -59,7 +58,7 @@ from pex.variables import ENV, Variables
 from pex.version import __version__
 
 if TYPE_CHECKING:
-    from typing import DefaultDict, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+    from typing import DefaultDict, Dict, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
 
     import attr  # vendor:skip
 
@@ -520,7 +519,7 @@ def _lock_build_systems(
     # type: (...) -> Iterator[Union[Tuple[BuildSystemTable, Tuple[LockedResolve, ...]], Error]]
 
     if not lock_configuration.lock_build_systems:
-        return iter(())
+        return
 
     build_systems = OrderedSet(
         artifact.build_system_table
@@ -532,7 +531,7 @@ def _lock_build_systems(
         if artifact.build_system_table
     )
     if not build_systems:
-        return iter(())
+        return
 
     build_system_pip_config = attr.evolve(
         pip_configuration,
