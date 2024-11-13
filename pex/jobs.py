@@ -17,7 +17,7 @@ from threading import BoundedSemaphore, Event, Thread
 from pex.common import pluralize
 from pex.compatibility import Queue, cpu_count
 from pex.tracer import TRACER
-from pex.typing import Generic, TYPE_CHECKING
+from pex.typing import TYPE_CHECKING, Generic
 
 if TYPE_CHECKING:
     from typing import (
