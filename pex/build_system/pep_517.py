@@ -22,7 +22,7 @@ from pex.tracer import TRACER
 from pex.typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Text, Union
+    from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Text, Tuple, Union
 
 _DEFAULT_BUILD_SYSTEMS = {}  # type: Dict[PipVersionValue, BuildSystem]
 
@@ -248,15 +248,14 @@ def build_sdist(
     return os.path.join(dist_dir, sdist_relpath)
 
 
-def spawn_prepare_metadata(
+def get_requires_for_build_wheel(
     project_directory,  # type: str
     target,  # type: Target
     resolver,  # type: Resolver
     pip_version=None,  # type: Optional[PipVersionValue]
 ):
-    # type: (...) -> SpawnedJob[DistMetadata]
+    # type: (...) -> Tuple[str, ...]
 
-    extra_requirements = []
     spawned_job = try_(
         _invoke_build_hook(
             project_directory,
@@ -267,11 +266,24 @@ def spawn_prepare_metadata(
         )
     )
     try:
-        extra_requirements.extend(spawned_job.await_result())
+        return tuple(spawned_job.await_result())
     except Job.Error as e:
         if e.exitcode != _HOOK_UNAVAILABLE_EXIT_CODE:
             raise e
+    return ()
 
+
+def spawn_prepare_metadata(
+    project_directory,  # type: str
+    target,  # type: Target
+    resolver,  # type: Resolver
+    pip_version=None,  # type: Optional[PipVersionValue]
+):
+    # type: (...) -> SpawnedJob[DistMetadata]
+
+    extra_requirements = get_requires_for_build_wheel(
+        project_directory, target, resolver, pip_version=pip_version
+    )
     build_dir = os.path.join(safe_mkdtemp(), "build")
     os.mkdir(build_dir)
     spawned_job = try_(

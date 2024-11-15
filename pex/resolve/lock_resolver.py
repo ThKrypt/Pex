@@ -300,6 +300,7 @@ def resolve_from_lock(
                     style=lock.style,
                     requires_python=lock.requires_python,
                     target_systems=lock.target_systems,
+                    lock_build_systems=lock.lock_build_systems,
                 ),
                 target=resolved_subset.target,
                 package_index_configuration=PackageIndexConfiguration.create(
