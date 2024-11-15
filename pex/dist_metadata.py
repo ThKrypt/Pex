@@ -2,7 +2,7 @@
 # Copyright 2020 Pex project contributors.
 # Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import errno
 import functools
@@ -376,9 +376,12 @@ def iter_metadata_files(
 ):
     # type: (...) -> Iterator[MetadataFiles]
 
+    debug = "_PEX_DEBUG" in os.environ
     files = []
     for metadata_type in restrict_types_to or MetadataType.values():
         key = MetadataKey(metadata_type=metadata_type, location=location)
+        if debug:
+            print(">>> looking for metadata", key, "rescan?:", rescan, file=sys.stderr)
         if rescan:
             _METADATA_FILES.pop(key, None)
         if key not in _METADATA_FILES:
@@ -394,6 +397,11 @@ def iter_metadata_files(
                     metadata_files = find_wheel_metadata(location)
                     if metadata_files:
                         listing.append(metadata_files)
+                elif debug:
+                    print(">>> location has unexpected file type", file=sys.stderr)
+                    print("... isfile", os.path.isfile(location), file=sys.stderr)
+                    print("... isdir", os.path.isdir(location), file=sys.stderr)
+                    print("... islink", os.path.islink(location), file=sys.stderr)
             elif MetadataType.EGG_INFO is metadata_type and os.path.isdir(location):
                 listing.extend(
                     _find_installed_metadata_files(
