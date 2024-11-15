@@ -402,6 +402,11 @@ def iter_metadata_files(
                     print("... isfile", os.path.isfile(location), file=sys.stderr)
                     print("... isdir", os.path.isdir(location), file=sys.stderr)
                     print("... islink", os.path.islink(location), file=sys.stderr)
+                    if os.path.islink(location):
+                        link = os.readlink(location)
+                        print("    ->", link, file=sys.stderr)
+                        print("       exists?:", os.path.exists(link), file=sys.stderr)
+                        print("    RP:", os.path.realpath(location), file=sys.stderr)
             elif MetadataType.EGG_INFO is metadata_type and os.path.isdir(location):
                 listing.extend(
                     _find_installed_metadata_files(
