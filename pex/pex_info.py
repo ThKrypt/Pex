@@ -517,6 +517,7 @@ class PexInfo(object):
                 "performance.".format(pex_root=pex_root, tmp_root=tmp_root)
             )
             pex_root = self._pex_info["pex_root"] = tmp_root
+            os.environ["PEX_ROOT"] = pex_root
         return pex_root
 
     @pex_root.setter
