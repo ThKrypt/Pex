@@ -151,6 +151,7 @@ class PexInfo(object):
 
         self._excluded = OrderedSet(self._pex_info.get("excluded", ()))  # type: OrderedSet[str]
         self._overridden = OrderedSet(self._pex_info.get("overridden", ()))  # type: OrderedSet[str]
+        self._backup_pex_root = safe_mkdtemp()
 
     def _get_safe(self, key):
         if key not in self._pex_info:
@@ -510,14 +511,13 @@ class PexInfo(object):
         # type: () -> str
         pex_root = os.path.realpath(os.path.expanduser(self.raw_pex_root))
         if not can_write_dir(pex_root):
-            tmp_root = os.path.realpath(safe_mkdtemp())
+            tmp_root = os.path.realpath(self._backup_pex_root)
             pex_warnings.warn(
                 "PEX_ROOT is configured as {pex_root} but that path is un-writeable, "
                 "falling back to a temporary PEX_ROOT of {tmp_root} which will hurt "
                 "performance.".format(pex_root=pex_root, tmp_root=tmp_root)
             )
             pex_root = self._pex_info["pex_root"] = tmp_root
-            os.environ["PEX_ROOT"] = pex_root
         return pex_root
 
     @pex_root.setter
