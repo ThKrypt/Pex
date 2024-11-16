@@ -9,7 +9,7 @@ import zipfile
 
 from pex import layout, pex_warnings, variables
 from pex.cache import root as cache_root
-from pex.common import can_write_dir, open_zip, safe_mkdtemp
+from pex.common import can_write_dir, open_zip, safe_mkdtemp, safe_rmtree
 from pex.compatibility import PY2, WINDOWS
 from pex.compatibility import string as compatibility_string
 from pex.inherit_path import InheritPath
@@ -151,6 +151,9 @@ class PexInfo(object):
 
         self._excluded = OrderedSet(self._pex_info.get("excluded", ()))  # type: OrderedSet[str]
         self._overridden = OrderedSet(self._pex_info.get("overridden", ()))  # type: OrderedSet[str]
+        os.environ["_PEX_BACKUP_ROOT"] = self._backup_pex_root = (
+            os.environ.get("_PEX_BACKUP_ROOT") or safe_mkdtemp()
+        )
 
     def _get_safe(self, key):
         if key not in self._pex_info:
@@ -509,8 +512,11 @@ class PexInfo(object):
     def pex_root(self):
         # type: () -> str
         pex_root = os.path.realpath(os.path.expanduser(self.raw_pex_root))
-        if not can_write_dir(pex_root):
-            tmp_root = os.path.realpath(safe_mkdtemp())
+        if can_write_dir(pex_root):
+            os.environ.pop("_PEX_BACKUP_ROOT", None)
+            safe_rmtree(self._backup_pex_root)
+        else:
+            tmp_root = os.path.realpath(self._backup_pex_root)
             pex_warnings.warn(
                 "PEX_ROOT is configured as {pex_root} but that path is un-writeable, "
                 "falling back to a temporary PEX_ROOT of {tmp_root} which will hurt "

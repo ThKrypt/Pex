@@ -28,7 +28,7 @@ def test_mount_respects_env(
     pex_file = os.path.join(str(tmpdir), "pex.pex")
 
     result = run_pex_command(
-        args=[pex_project_dir, "-o", pex_file], env=make_env(HOME=home), quiet=True
+        args=[pex_project_dir, "-o", pex_file], env=make_env(HOME=home, _PEX_DEBUG=1), quiet=True
     )
     result.assert_success()
 
